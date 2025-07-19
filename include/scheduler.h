@@ -28,6 +28,11 @@ public:
     void terminateProcess(PCB* p);
     void simulateCPU(int cycles);
     void addToReadyQueue(PCB* p);
+
+    void runPriorityScheduling();
+    void runSJFScheduling();
+    void runRoundRobinScheduling(int timeQuantum);
+    void evaluatePerformance(const std::string& algorithm);
 };
 
 #endif // SCHEDULER_H

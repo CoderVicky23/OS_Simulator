@@ -1,5 +1,8 @@
 #include "scheduler.h"
 
+#include <algorithm>
+#include <iomanip>
+
 Scheduler::Scheduler(MemoryManager* mm, ProcessQueues* pq)
     : memoryManager(mm), processQueues(pq), runningProcess(nullptr) {}
 
@@ -90,4 +93,57 @@ void Scheduler::simulateCPU(int cycles) {
             }
         }
     }
+}
+
+void Scheduler::runPriorityScheduling() {
+    std::vector<PCB*> processes;
+    while (!readyQueue.empty()) {
+        processes.push_back(readyQueue.front());
+        readyQueue.pop();
+    }
+    std::sort(processes.begin(), processes.end(), [](PCB* a, PCB* b) {
+        return a->priority > b->priority; // higher priority runs first
+    });
+
+    std::cout << "\n[Priority Scheduling]\n";
+    for (auto& p : processes) {
+        std::cout << "[Run] PID: " << p->pid << " Priority: " << p->priority << "\n";
+    }
+}
+
+void Scheduler::runSJFScheduling() {
+    std::vector<PCB*> processes;
+    while (!readyQueue.empty()) {
+        processes.push_back(readyQueue.front());
+        readyQueue.pop();
+    }
+    std::sort(processes.begin(), processes.end(), [](PCB* a, PCB* b) {
+        return a->memory_required < b->memory_required;
+    });
+
+    std::cout << "\n[Shortest Job First Scheduling]\n";
+    for (auto& p : processes) {
+        std::cout << "[Run] PID: " << p->pid << " Memory Req: " << p->memory_required << "\n";
+    }
+}
+
+void Scheduler::runRoundRobinScheduling(int timeQuantum) {
+    std::queue<PCB*> rrQueue = readyQueue;
+    std::cout << "\n[Round Robin Scheduling] (Time Quantum: " << timeQuantum << ")\n";
+    int cycle = 0;
+    while (!rrQueue.empty()) {
+        PCB* current = rrQueue.front();
+        rrQueue.pop();
+        std::cout << "[Cycle " << ++cycle << "] Running PID: " << current->pid << "\n";
+        rrQueue.push(current);
+        if (cycle > rrQueue.size() * 2) break; // avoid infinite loop in demo
+    }
+}
+
+void Scheduler::evaluatePerformance(const std::string& algorithm) {
+    std::cout << "\n[Evaluation: " << algorithm << "]\n";
+    std::cout << "(Metrics simulation not fully implemented)\n";
+    std::cout << "Turnaround Time: Simulated\n";
+    std::cout << "Waiting Time: Simulated\n";
+    std::cout << "CPU Utilization: Simulated\n";
 }
