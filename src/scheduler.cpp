@@ -19,7 +19,7 @@ void Scheduler::scheduleNextProcess() {
     }
 
     if (!readyQueue.empty()) {
-        runningProcess = readyQueue.front();
+        runningProcess = readyQueue.top();
         readyQueue.pop();
         runningProcess->state = ProcessState::RUNNING;
         std::cout << "[Scheduler] Running PID: " << runningProcess->pid << "\n";
@@ -97,14 +97,13 @@ void Scheduler::simulateCPU(int cycles) {
 
 void Scheduler::runPriorityScheduling() {
     std::vector<PCB*> processes;
-    while (!readyQueue.empty()) {
-        processes.push_back(readyQueue.front());
-        readyQueue.pop();
+    // Create a temporary copy of the priority queue
+    std::priority_queue<PCB*, std::vector<PCB*>, CompareProcessPriority> tempQueue = readyQueue;
+    while (!tempQueue.empty()) {
+        processes.push_back(tempQueue.top());
+        tempQueue.pop();
     }
-    std::sort(processes.begin(), processes.end(), [](PCB* a, PCB* b) {
-        return a->priority > b->priority; // higher priority runs first
-    });
-
+    
     std::cout << "\n[Priority Scheduling]\n";
     for (auto& p : processes) {
         std::cout << "[Run] PID: " << p->pid << " Priority: " << p->priority << "\n";
@@ -113,9 +112,11 @@ void Scheduler::runPriorityScheduling() {
 
 void Scheduler::runSJFScheduling() {
     std::vector<PCB*> processes;
-    while (!readyQueue.empty()) {
-        processes.push_back(readyQueue.front());
-        readyQueue.pop();
+    // Create a temporary copy of the priority queue
+    std::priority_queue<PCB*, std::vector<PCB*>, CompareProcessPriority> tempQueue = readyQueue;
+    while (!tempQueue.empty()) {
+        processes.push_back(tempQueue.top());
+        tempQueue.pop();
     }
     std::sort(processes.begin(), processes.end(), [](PCB* a, PCB* b) {
         return a->memory_required < b->memory_required;
@@ -128,7 +129,19 @@ void Scheduler::runSJFScheduling() {
 }
 
 void Scheduler::runRoundRobinScheduling(int timeQuantum) {
-    std::queue<PCB*> rrQueue = readyQueue;
+    std::vector<PCB*> processes;
+    // Create a temporary copy of the priority queue
+    std::priority_queue<PCB*, std::vector<PCB*>, CompareProcessPriority> tempQueue = readyQueue;
+    while (!tempQueue.empty()) {
+        processes.push_back(tempQueue.top());
+        tempQueue.pop();
+    }
+    
+    std::queue<PCB*> rrQueue;
+    for (auto& p : processes) {
+        rrQueue.push(p);
+    }
+    
     std::cout << "\n[Round Robin Scheduling] (Time Quantum: " << timeQuantum << ")\n";
     int cycle = 0;
     while (!rrQueue.empty()) {
@@ -136,7 +149,7 @@ void Scheduler::runRoundRobinScheduling(int timeQuantum) {
         rrQueue.pop();
         std::cout << "[Cycle " << ++cycle << "] Running PID: " << current->pid << "\n";
         rrQueue.push(current);
-        if (cycle > rrQueue.size() * 2) break; // avoid infinite loop in demo
+        if (cycle > processes.size() * 2) break; // avoid infinite loop in demo
     }
 }
 
@@ -146,4 +159,20 @@ void Scheduler::evaluatePerformance(const std::string& algorithm) {
     std::cout << "Turnaround Time: Simulated\n";
     std::cout << "Waiting Time: Simulated\n";
     std::cout << "CPU Utilization: Simulated\n";
+}
+
+void Scheduler::addProcess(PCB* p) {
+    addToReadyQueue(p);
+}
+
+void Scheduler::runSimulation() {
+    simulateCPU(10); // Default simulation cycles
+}
+
+void Scheduler::dispatch() {
+    scheduleNextProcess();
+}
+
+void Scheduler::handleTermination(PCB* p) {
+    terminateProcess(p);
 }

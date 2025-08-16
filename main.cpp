@@ -2,13 +2,16 @@
 #include <vector>
 #include <cstdlib>
 #include <ctime>
+
 #include "memory_manager.h"
 #include "process_queues.h"
 #include "scheduler.h"
 #include "pcb.h"
 
-std::vector<PCB*> cloneProcesses(const std::vector<PCB*>& original) {
-    std::vector<PCB*> clones;
+using namespace std;
+
+vector<PCB*> cloneProcesses(vector<PCB*>& original) {
+    vector<PCB*> clones;
     for (const auto& p : original) {
         PCB* newP = new PCB(*p);
         newP->state = ProcessState::READY;
@@ -19,7 +22,7 @@ std::vector<PCB*> cloneProcesses(const std::vector<PCB*>& original) {
 }
 
 int main() {
-    std::srand(static_cast<unsigned>(std::time(nullptr)));
+    srand(static_cast<unsigned>(time(nullptr)));
 
     // Initialize system components
     MemoryManager memory;
@@ -30,9 +33,9 @@ int main() {
     Scheduler rrScheduler(&memory, &queues);
 
     // Create sample processes
-    std::vector<PCB*> allProcesses;
+    vector<PCB*> allProcesses;
     int numProcesses = 20;
-    std::vector<std::string> resources = {"file1", "printer", "disk"};
+    vector<string> resources = {"file1", "printer", "disk"};
 
     for (int i = 1; i <= numProcesses; ++i) {
         PCB* p = new PCB();
@@ -43,7 +46,7 @@ int main() {
         p->memory_required = 100 + rand() % 200;
         p->required_resource = resources[rand() % resources.size()];
 
-        std::cout << "[Create] Process PID: " << p->pid
+        cout << "[Create] Process PID: " << p->pid
                   << ", Memory: " << p->memory_required
                   << ", Resource: " << p->required_resource << "\n";
 
@@ -51,14 +54,14 @@ int main() {
             scheduler.addToReadyQueue(p);
             allProcesses.push_back(p);
         } else {
-            std::cout << "[Rejected] Not enough memory for PID: " << p->pid << "\n";
+            cout << "[Rejected] Not enough memory for PID: " << p->pid << "\n";
             delete p;
         }
     }
 
-    std::vector<PCB*> cloned1 = cloneProcesses(allProcesses);
-    std::vector<PCB*> cloned2 = cloneProcesses(allProcesses);
-    std::vector<PCB*> cloned3 = cloneProcesses(allProcesses);
+    vector<PCB*> cloned2 = cloneProcesses(allProcesses);
+    vector<PCB*> cloned3 = cloneProcesses(allProcesses);
+    vector<PCB*> cloned1 = cloneProcesses(allProcesses);
 
     for (auto& p : cloned1) priorityScheduler.addToReadyQueue(p);
     priorityScheduler.runPriorityScheduling();
@@ -78,14 +81,6 @@ int main() {
     // Simulate CPU execution cycles
     int cycles = 15;
     scheduler.simulateCPU(cycles);
-    // priorityScheduler.runPriorityScheduling();
-    // priorityScheduler.evaluatePerformance("Priority Scheduling");
-
-    // sjfScheduler.runSJFScheduling();
-    // sjfScheduler.evaluatePerformance("SJF Scheduling");
-
-    // rrScheduler.runRoundRobinScheduling(4); // 4 ms time slice
-    // rrScheduler.evaluatePerformance("Round Robin");
 
     // Clean up
     for (PCB* p : allProcesses) {
@@ -95,7 +90,7 @@ int main() {
         delete p;
     }
 
-    std::cout << "\n[Simulation Complete] Final memory status:\n";
+    cout << "\n[Simulation Complete] Final memory status:\n";
     memory.print_memory_status();
 
     return 0;
