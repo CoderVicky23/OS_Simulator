@@ -9,13 +9,13 @@
 
 class ProcessQueues {
 private:
-    std::queue<PCB> ready_queue;
-    std::unordered_map<std::string, std::list<PCB>> blocked_queue;
+    std::queue<PCB*> ready_queue;
+    std::unordered_map<std::string, std::list<PCB*>> blocked_queue;
 
 public:
-    void add_to_ready(const PCB& process);
-    void add_to_blocked(const std::string& resource, const PCB& process);
-    bool pop_ready(PCB& process);
+    void add_to_ready(PCB* process);
+    void add_to_blocked(const std::string& resource, PCB* process);
+    PCB* pop_ready();
     void release_resource(const std::string& resource);
     void print_queues_status() const;
 };

@@ -1,28 +1,28 @@
 #include "process_queues.h"
 #include <iostream>
 
-void ProcessQueues::add_to_ready(const PCB& process) {
+void ProcessQueues::add_to_ready(PCB* process) {
     ready_queue.push(process);
 }
 
-void ProcessQueues::add_to_blocked(const std::string& resource, const PCB& process) {
+void ProcessQueues::add_to_blocked(const std::string& resource, PCB* process) {
     blocked_queue[resource].push_back(process);
 }
 
-bool ProcessQueues::pop_ready(PCB& process) {
+PCB* ProcessQueues::pop_ready() {
     if (!ready_queue.empty()) {
-        process = ready_queue.front();
+        PCB* process = ready_queue.front();
         ready_queue.pop();
-        return true;
+        return process;
     }
-    return false;
+    return nullptr;
 }
 
 void ProcessQueues::release_resource(const std::string& resource) {
     auto it = blocked_queue.find(resource);
     if (it != blocked_queue.end()) {
         for (const auto& proc : it->second) {
-            std::cout << "[Resource] Process " << proc.pid << " moved from Blocked to Ready (resource: " << resource << ")\n";
+            std::cout << "[Resource] Process " << proc->pid << " moved from Blocked to Ready (resource: " << resource << ")\n";
             ready_queue.push(proc);
         }
         blocked_queue.erase(it);
@@ -35,7 +35,7 @@ void ProcessQueues::print_queues_status() const {
     for (const auto& [res, list] : blocked_queue) {
         std::cout << "  Resource: " << res << " → Processes: ";
         for (const auto& proc : list) {
-            std::cout << proc.pid << " ";
+            std::cout << proc->pid << " ";
         }
         std::cout << "\n";
     }

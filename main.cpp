@@ -35,7 +35,7 @@ int main() {
     // Create sample processes
     vector<PCB*> allProcesses;
     int numProcesses = 20;
-    vector<string> resources = {"file1", "printer", "disk"};
+    vector<string> resources = {"file1", "printer", "disk", ""};
 
     for (int i = 1; i <= numProcesses; ++i) {
         PCB* p = new PCB();
